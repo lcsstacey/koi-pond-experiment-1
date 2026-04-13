@@ -28,13 +28,7 @@ This experiment explores techniques for animating multiple agents on an HTML5 ca
 ## Screenshots
 You can add a screenshot or GIF here to showcase the simulation (e.g. `docs/screenshot.png`).
 
-## Patch Notes
 
-### Version 1.0 (April 13, 2026)
-
-- **Legendary alert timing:** Legendary notices now trigger only after the player has been in the pond for a while, rather than immediately on page load. The arrival notifications use the softer stacked notification system and linger calmly.
-- **Last polish pass:** Tightened some of the narrative text for a richer, more in-world tone; softened notification motion further; removed leftover unused UI remnants from older notification paths; performed a final syntax and bug check on the patched script.
-- The canvas pane remains open beside the chat for visual iteration.
 
 ## License and Usage
 This project is released under an **all rights reserved** license. You may view and play the koi pond simulation via the GitHub Pages link provided, but you may not copy, redistribute, or reuse the code or assets without explicit permission from the author.
