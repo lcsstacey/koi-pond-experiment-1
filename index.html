@@ -3,20 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Koi Pond</title>
+<title>静水庭 | Seisuitei</title>
 <style>
-:root{--hud-bar-h:58px}
+:root{--hud-bar-h:58px;--hud-pill-h:44px;--hud-gap:10px;--hud-side-gap:14px;--hud-left-w:248px;--hud-right-w:248px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#030d0d;overflow:hidden}
 canvas{display:block;touch-action:none}
 #overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(3,13,13,.97);z-index:20;transition:opacity 1.2s}
-#overlay h1{color:#a8dfd4;font-size:clamp(2rem,6vw,3rem);font-family:Georgia,serif;letter-spacing:.25em;text-shadow:0 0 40px #3dbfaa;margin-bottom:.5rem}
+#overlay h1{color:#a8dfd4;font-size:clamp(2.2rem,6.8vw,3.6rem);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;letter-spacing:.18em;text-shadow:0 0 42px rgba(61,191,170,.82);margin-bottom:.65rem;line-height:1.02;text-align:center;font-weight:600}#overlay h1 .title-jp{display:block}#overlay h1 .title-en{display:block;margin-top:.56rem;color:rgba(168,223,212,.46);font-size:.26em;letter-spacing:.42em;font-family:Georgia,serif;font-weight:400;text-shadow:0 0 18px rgba(61,191,170,.16)}
 #overlay p{color:#5fa898;font-size:.95rem;letter-spacing:.18em;font-family:Georgia,serif}
 .ebtn{margin-top:2rem;padding:.6rem 2rem;border:1px solid rgba(78,200,180,.45);border-radius:99px;color:#a8dfd4;font-size:.9rem;letter-spacing:.12em;background:rgba(78,200,180,.08);cursor:pointer;font-family:Georgia,serif;transition:all .3s}
 .ebtn:hover{background:rgba(78,200,180,.2)}
 #author{position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;color:rgba(168,223,212,.28);font-size:.62rem;letter-spacing:.22em;font-family:Georgia,serif;pointer-events:none;user-select:none}
 #ui{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
 #menu{display:flex;gap:6px;padding:10px 14px;background:rgba(0,0,0,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:16px 16px 0 0;border-top:1px solid rgba(255,255,255,.07);pointer-events:all}
+#menu,#rankHud,#notifStack,.topbtn,#seasonBadge{transition:opacity 1.45s cubic-bezier(.22,1,.36,1),transform 1.45s cubic-bezier(.22,1,.36,1),filter 1.45s cubic-bezier(.22,1,.36,1)}
+body.hud-dim #menu,body.hud-dim #rankHud,body.hud-dim #notifStack,body.hud-dim .topbtn,body.hud-dim #seasonBadge{opacity:.34;filter:saturate(.86) blur(.15px)}
+body.hud-dim #menu{opacity:.28}
 .sb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 13px;border-radius:10px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;font-size:.62rem;letter-spacing:.07em;transition:all .28s;font-family:Georgia,serif}
 .sb .ic{font-size:1.2rem;line-height:1}
 .sb.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.16);color:rgba(255,255,255,.88)}
@@ -33,14 +36,14 @@ canvas{display:block;touch-action:none}
 #musicBtn{left:1rem;font-size:1rem}
 #musicBtn.on{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9)}
 #notif{display:none}
-#notifStack{position:fixed;right:1rem;bottom:1rem;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:9px;z-index:14;pointer-events:none;max-width:min(380px,calc(100vw - 1.6rem))}
-.stack-notif{min-width:260px;max-width:380px;min-height:var(--hud-bar-h);display:flex;flex-direction:column;justify-content:center;background:rgba(6,16,18,.84);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(78,200,180,.2);border-radius:16px;padding:.6rem .95rem;box-shadow:0 14px 34px rgba(0,0,0,.24);opacity:0;transform:translateX(18px);filter:blur(6px);transition:opacity .52s cubic-bezier(.22,1,.36,1),transform .52s cubic-bezier(.22,1,.36,1),filter .52s cubic-bezier(.22,1,.36,1);border-left-width:3px;will-change:transform,opacity,filter}
-.stack-notif.show{opacity:1;transform:translateX(0);filter:blur(0)}
-.stack-notif.exit{opacity:0;transform:translateX(24px);filter:blur(6px)}
+#notifStack{position:fixed;right:var(--hud-side-gap);bottom:var(--hud-gap);display:flex;flex-direction:column-reverse;align-items:stretch;gap:9px;z-index:14;pointer-events:none;width:var(--hud-right-w);max-width:var(--hud-right-w)}
+.stack-notif{width:100%;min-width:0;max-width:none;min-height:var(--hud-pill-h);display:flex;flex-direction:column;justify-content:center;background:rgba(6,16,18,.84);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(78,200,180,.2);border-radius:16px;padding:.54rem .86rem;box-shadow:0 14px 34px rgba(0,0,0,.22);opacity:0;transform:translateX(14px) translateY(4px);filter:blur(5px);transition:opacity 2.15s cubic-bezier(.19,1,.22,1),transform 2.15s cubic-bezier(.19,1,.22,1),filter 2.15s cubic-bezier(.19,1,.22,1);border-left-width:3px;will-change:transform,opacity,filter;overflow:hidden}
+.stack-notif.show{opacity:1;transform:translateX(0) translateY(0);filter:blur(0)}
+.stack-notif.exit{opacity:0;transform:translateX(4px) translateY(1px);filter:blur(2px)}
 .stack-notif.music{border-color:rgba(78,200,180,.26);border-left-color:rgba(108,224,205,.72)}
 .stack-notif.legendary{border-color:rgba(255,223,155,.26);border-left-color:rgba(255,223,155,.76);background:rgba(14,12,10,.82)}
-.stack-notif .sn-title{color:rgba(245,250,248,.94);font-size:.72rem;letter-spacing:.14em;font-family:Georgia,serif;text-transform:uppercase}
-.stack-notif .sn-sub{color:rgba(200,228,220,.5);font-size:.61rem;letter-spacing:.08em;line-height:1.45;font-family:Georgia,serif;margin-top:4px}
+.stack-notif .sn-title{color:rgba(245,250,248,.94);font-size:clamp(.58rem,.9vw,.72rem);letter-spacing:.14em;font-family:Georgia,serif;text-transform:uppercase;line-height:1.18}
+.stack-notif .sn-sub{color:rgba(200,228,220,.5);font-size:clamp(.52rem,.82vw,.61rem);letter-spacing:.07em;line-height:1.38;font-family:Georgia,serif;margin-top:3px}
 .stack-notif.legendary .sn-title{color:rgba(255,239,208,.96)}
 .stack-notif.legendary .sn-sub{color:rgba(245,222,186,.58)}
 #hint{display:none}
@@ -49,14 +52,13 @@ canvas{display:block;touch-action:none}
 #startHint .sh1{color:rgba(168,223,212,.92);font-size:1rem;letter-spacing:.32em;font-family:Georgia,serif;text-shadow:0 0 28px rgba(61,191,170,.7);margin-bottom:.7rem}
 #startHint .sh2{color:rgba(168,223,212,.55);font-size:.72rem;letter-spacing:.22em;font-family:Georgia,serif}
 /* Rank HUD — bottom left */
-#rankHud{position:fixed;bottom:1rem;left:1rem;display:none;flex-direction:column;justify-content:center;gap:2px;z-index:12;pointer-events:none;min-width:228px;max-width:264px;min-height:var(--hud-bar-h);background:rgba(0,0,0,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(168,223,212,.14);border-radius:16px;padding:.48rem .82rem}
-#rankHud .rh-name{color:rgba(168,223,212,.92);font-size:.72rem;font-family:Georgia,serif;letter-spacing:.14em;text-shadow:0 0 10px rgba(61,191,170,.42)}
-#rankHud .rh-sub{color:rgba(168,223,212,.42);font-size:.54rem;font-family:Georgia,serif;letter-spacing:.12em;font-style:italic}
-#rankHud .rh-bar{height:3px;background:rgba(168,223,212,.12);border-radius:2px;margin-top:3px;overflow:hidden}
+#rankHud{position:fixed;bottom:var(--hud-gap);left:var(--hud-side-gap);display:none;flex-direction:column;justify-content:center;gap:1px;z-index:12;pointer-events:none;width:var(--hud-left-w);max-width:var(--hud-left-w);min-height:var(--hud-pill-h);height:var(--hud-pill-h);background:rgba(0,0,0,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(168,223,212,.14);border-radius:16px;padding:.36rem .74rem .34rem;box-shadow:0 12px 26px rgba(0,0,0,.16)}
+#rankHud .rh-name{color:rgba(168,223,212,.92);font-size:clamp(.64rem,1vw,.72rem);font-family:Georgia,serif;letter-spacing:.13em;text-shadow:0 0 10px rgba(61,191,170,.42);line-height:1.05}
+#rankHud .rh-sub{color:rgba(168,223,212,.42);font-size:clamp(.48rem,.8vw,.54rem);font-family:Georgia,serif;letter-spacing:.11em;font-style:italic;line-height:1.02}
+#rankHud .rh-bar{height:3px;background:rgba(168,223,212,.12);border-radius:2px;margin-top:3px;overflow:hidden;flex:0 0 auto}
 #rankHud .rh-fill{height:100%;background:linear-gradient(90deg,rgba(78,200,180,.6),rgba(168,223,212,.9));width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)}
-#rankHud .rh-meta{color:rgba(168,223,212,.38);font-size:.53rem;font-family:Georgia,serif;letter-spacing:.11em;margin-top:1px}
+#rankHud .rh-meta{color:rgba(168,223,212,.38);font-size:clamp(.47rem,.78vw,.53rem);font-family:Georgia,serif;letter-spacing:.1em;margin-top:1px;line-height:1.05}
 body.zen #rankHud{opacity:0;transition:opacity .8s}
-#trackToast{display:none!important}
 #fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:15;transition:opacity .5s}
 
 /* ── Zen Mode dimmer ── */
@@ -190,8 +192,8 @@ body.zen #zenHint{opacity:.55}
 <div id="fade"></div>
 
 <div id="overlay">
-  <h1>Koi Pond</h1>
-  <p>tap · hold to feed</p>
+  <h1><span class="title-jp">静水庭</span><span class="title-en">SEISUITEI</span></h1>
+  <p>touch the water · hold to feed</p>
   <div class="ebtn" onclick="startApp()">Enter</div>
   <div id="author">Developed by Lucas Stacey</div>
 </div>
@@ -215,9 +217,7 @@ body.zen #zenHint{opacity:.55}
 
 <button class="topbtn" id="musicBtn" onclick="togglePanel()">♪</button>
 <button class="topbtn" id="pauseBtn" onclick="openPause()">⏸</button>
-<div id="notif"></div>
 <div id="notifStack"></div>
-<div id="trackToast"><span id="trackToastName"></span></div>
 <div id="startHint"><div class="sh1">TAP TO RIPPLE</div><div class="sh2">HOLD TO FEED</div></div>
 <div id="seasonBadge"></div>
 <div id="todArc"><canvas id="arcCv" width="90" height="52"></canvas></div>
@@ -240,7 +240,7 @@ body.zen #zenHint{opacity:.55}
     <div class="ps-header">
       <div class="ps-title-block">
         <h2>Paused</h2>
-        <p>Koi Pond</p>
+        <p>Seisuitei</p>
       </div>
       <div class="ps-header-actions">
         <button class="ps-icon-btn" id="zenHeaderBtn" title="Zen Mode" onclick="enterZen()">🌙</button>
@@ -294,15 +294,36 @@ body.zen #zenHint{opacity:.55}
 </div>
 
 <script>
-// ── Koi Pond — © Lucas Stacey. All rights reserved. ──────────────────
+// ── Seisuitei — © Lucas Stacey. All rights reserved. ───────────────────
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let W,H;
 const rz=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;syncHudMetrics();};
-rz();window.addEventListener('resize',()=>{rz();if(running)rebuild();});
+rz();window.addEventListener('resize',()=>{rz();updateHudAnchors();if(running)rebuild();});
 function syncHudMetrics(){
   const menu=document.getElementById('menu');
   const h=Math.max(54,Math.round(menu?menu.getBoundingClientRect().height:58));
   document.documentElement.style.setProperty('--hud-bar-h',h+'px');
+}
+
+let hudIdleTimer=null,hudWakeTs=0;
+function clearHudDimTimer(){if(hudIdleTimer){clearTimeout(hudIdleTimer);hudIdleTimer=null;}}
+function scheduleHudDim(){
+  clearHudDimTimer();
+  if(!running||gamePaused||zenActive||panelOpen){
+    document.body.classList.remove('hud-dim');
+    return;
+  }
+  hudIdleTimer=setTimeout(()=>{
+    if(!running||gamePaused||zenActive||panelOpen)return;
+    document.body.classList.add('hud-dim');
+  },5200);
+}
+function wakeHud(force=false){
+  const now=performance.now();
+  if(!force&&now-hudWakeTs<170)return;
+  hudWakeTs=now;
+  document.body.classList.remove('hud-dim');
+  scheduleHudDim();
 }
 
 
@@ -626,6 +647,30 @@ function updateRankHud(){
 }
 function bumpFed(){totalFed++;updateRankHud();const s=getSave();s.totalFed=totalFed;writeSave(s);}
 
+function updateHudAnchors(){
+  const menu=document.getElementById('menu');
+  const hud=document.getElementById('rankHud');
+  const stack=document.getElementById('notifStack');
+  if(!menu||!hud||!stack)return;
+  const rect=menu.getBoundingClientRect();
+  const vw=innerWidth;
+  const sideGap=Math.round(Math.max(10,Math.min(18,vw*.012)));
+  const bottomGap=10;
+  const barH=Math.max(54,Math.round(rect.height));
+  const pillH=Math.max(40,barH-16);
+  const leftAvail=Math.max(0,Math.floor(rect.left-sideGap-10));
+  const rightAvail=Math.max(0,Math.floor(vw-rect.right-sideGap-10));
+  const leftW=Math.min(278,leftAvail);
+  const rightW=Math.min(306,rightAvail);
+  document.documentElement.style.setProperty('--hud-gap',bottomGap+'px');
+  document.documentElement.style.setProperty('--hud-side-gap',sideGap+'px');
+  document.documentElement.style.setProperty('--hud-bar-h',barH+'px');
+  document.documentElement.style.setProperty('--hud-pill-h',pillH+'px');
+  document.documentElement.style.setProperty('--hud-left-w',leftW+'px');
+  document.documentElement.style.setProperty('--hud-right-w',rightW+'px');
+}
+
+
 // ── Scene config ──────────────────────────────────────────────────────
 const S={
   garden:{bg:['#0e3232','#071c1c','#030d0d'],sh:[70,190,140],tint:null,moon:0,
@@ -654,12 +699,12 @@ const sc=()=>S[cur];
 
 // ── Track config ──────────────────────────────────────────────────────
 const TRACKS={
-  stillwater:{name:'Stillwater',sub:'ambient pond'},
-  wandering:{name:'Wandering Spell',sub:'enchanted wonder',pf:[82.41,110,164.81],pv:.009},
-  ancient:{name:'Ancient Roads',sub:'the septims',pf:[97.99,130.81,195.99],pv:.013},
-  cradle:{name:'Cradle',sub:'the deep world',pf:[110,146.83,220],pv:.010},
-  haven:{name:'Haven',sub:'safe harbour',pf:[130.81,196,261.63],pv:.010},
-  lullaby:{name:'Silver Lullaby',sub:'distant shores',pf:[87.31,130.81,174.61],pv:.008}
+  stillwater:{name:'Stillwater',sub:'reed shade and clear water'},
+  wandering:{name:'Wandering Spell',sub:'enchanted drift over lilies',pf:[82.41,110,164.81],pv:.009},
+  ancient:{name:'Ancient Roads',sub:'stone hush and far bells',pf:[97.99,130.81,195.99],pv:.013},
+  cradle:{name:'Cradle',sub:'deep water hymn',pf:[110,146.83,220],pv:.010},
+  haven:{name:'Haven',sub:'harbour lamps at dusk',pf:[130.81,196,261.63],pv:.010},
+  lullaby:{name:'Silver Lullaby',sub:'shoreline moonlight',pf:[87.31,130.81,174.61],pv:.008}
 };
 let curTrack='stillwater';
 let tTimer=null;
@@ -1372,7 +1417,7 @@ class Koi{
       this.tA+=Math.cos(this.x*.01+this.ambientBias)*.0036;
     }
     if(this.arrivalPulse>0)this.arrivalPulse=Math.max(0,this.arrivalPulse-.022);
-    if(this.isRare&&!this.arrivalShown&&!gamePaused&&sceneElapsedMs>900&&legendaryTellCooldown<=0&&!sceneLegendaryTells.has(this.species)){
+    if(this.isRare&&!this.arrivalShown&&!gamePaused&&sceneElapsedMs>LEGENDARY_TELL_DELAY_MS&&legendaryTellCooldown<=0&&!sceneLegendaryTells.has(this.species)){
       const m=90;
       if(this.x>m&&this.x<W-m&&this.y>m&&this.y<H-m){
         this.arrivalShown=true;
@@ -1550,17 +1595,19 @@ function startTrack(id){
 }
 
 // ── Notifications ─────────────────────────────────────────────────────
+const LEGENDARY_TELL_DELAY_MS=10000;
 let legendaryTellCooldown=0,sceneEnterTs=0,sceneElapsedMs=0,sceneLegendaryTells=new Set(),notifSeq=0;
-function pushStackNotif({title,sub='',tone='music',life=3600}){
+function pushStackNotif({title,sub='',tone='music',life=10000}){
   const host=document.getElementById('notifStack');
   if(!host)return;
+  wakeHud(true);
   const el=document.createElement('div');
   el.className=`stack-notif ${tone}`;
   el.dataset.seq=String(++notifSeq);
   el.innerHTML=`<div class="sn-title">${title}</div>${sub?`<div class="sn-sub">${sub}</div>`:''}`;
   host.appendChild(el);
   requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
-  const removeNode=(node,delay=520)=>setTimeout(()=>node.remove(),delay);
+  const removeNode=(node,delay=2300)=>setTimeout(()=>node.remove(),delay);
   const close=(node=el)=>{
     if(!node||node.dataset.closing==='1')return;
     node.dataset.closing='1';
@@ -1569,38 +1616,38 @@ function pushStackNotif({title,sub='',tone='music',life=3600}){
     removeNode(node);
   };
   setTimeout(()=>close(el),life);
-  while(host.children.length>4){
+  while(host.children.length>5){
     close(host.firstElementChild);
   }
 }
 function showTrackToast(label,sub=''){
-  pushStackNotif({title:label,sub,tone:'music',life:3200});
+  pushStackNotif({title:label,sub,tone:'music',life:10000});
 }
 function showLegendaryTell(f){
   const sp=FISH_SPECIES[f.species];
   if(!sp)return;
   const lines=[
-    `${sp.name} breaks the stillness`,
-    `${sp.name} brushes the surface`,
-    `${sp.name} answers the pond`,
-    `${sp.name} slips through the quiet`,
-    `${sp.name} passes beneath the light`
+    `${sp.name} slips into view like a kept secret`,
+    `${sp.name} turns once and the pond grows quiet`,
+    `${sp.name} moves through the water like old silk`,
+    `${sp.name} passes by as though it belongs to an older season`,
+    `${sp.name} gathers the light, then gives it back`
   ];
   const subs=[
-    'The water changes for a moment, then settles again.',
-    'A rare presence threads through the pond and is gone.',
-    'Even the smaller koi seem to make room for it.',
-    'You catch it just before the ripples close behind it.'
+    'The smaller koi drift aside without any fuss.',
+    'For a moment the water feels deeper than it was before.',
+    'You catch the colour cleanly, then only the wake remains.',
+    'The surface settles, but not quite the same way as before.'
   ];
   const idx=(sceneLegendaryTells.size+sp.name.length)%lines.length;
   const subIdx=(sp.lore.length+sceneLegendaryTells.size)%subs.length;
-  pushStackNotif({title:`✦ ${lines[idx]}`,sub:subs[subIdx],tone:'legendary',life:4300});
+  pushStackNotif({title:`✦ ${lines[idx]}`,sub:subs[subIdx],tone:'legendary',life:12000});
 }
 
 // ── Track panel ───────────────────────────────────────────────────────
 let panelOpen=false;
-function togglePanel(){panelOpen=!panelOpen;const p=document.getElementById('trackPanel'),b=document.getElementById('musicBtn');p.style.display=panelOpen?'flex':'none';b.classList.toggle('on',panelOpen);}
-function closePanel(){panelOpen=false;document.getElementById('trackPanel').style.display='none';document.getElementById('musicBtn').classList.remove('on');}
+function togglePanel(){panelOpen=!panelOpen;const p=document.getElementById('trackPanel'),b=document.getElementById('musicBtn');p.style.display=panelOpen?'flex':'none';b.classList.toggle('on',panelOpen);if(panelOpen){clearHudDimTimer();document.body.classList.remove('hud-dim');}else wakeHud(true);}
+function closePanel(){panelOpen=false;document.getElementById('trackPanel').style.display='none';document.getElementById('musicBtn').classList.remove('on');wakeHud(true);}
 function setTrack(id){
   if(id===curTrack){closePanel();return;}
   curTrack=id;
@@ -1624,6 +1671,8 @@ function playSceneMotif(){
 // ── Zen Mode (replaces DnD — dims the screen for bedtime play) ───────
 let zenActive=false;
 function enterZen(){
+  clearHudDimTimer();
+  document.body.classList.remove('hud-dim');
   zenActive=true;
   document.body.classList.add('zen');
   document.getElementById('zenOverlay').style.display='block';
@@ -1634,6 +1683,7 @@ function exitZen(){
   zenActive=false;
   document.body.classList.remove('zen');
   document.getElementById('zenOverlay').style.display='none';
+  wakeHud(true);
 }
 
 // ── Pause FX (cursor follower + ambient particles) ───────────────────
@@ -1758,7 +1808,8 @@ function buildProgress(){
       <div class="rank-row-desc">${RANK_LORE[r.name]||''}</div>
     </div>
   `).join('');
-  const legendaryHtml=ALL_LEGENDARY_KEYS.map(buildLegendaryEntry).join('');
+  const legendaryOrder=[...ALL_LEGENDARY_KEYS].sort((a,b)=>Number(!!discovered[a])-Number(!!discovered[b]));
+  const legendaryHtml=legendaryOrder.map(buildLegendaryEntry).join('');
   box.innerHTML=`
     <div class="progress-card">
       <div class="progress-title">Current Rank</div>
@@ -1772,12 +1823,12 @@ function buildProgress(){
     </div>
     <div class="progress-card legendary-card">
       <div class="progress-title">Legendary Discoveries</div>
-      <div class="progress-sub">Native pond legends and wandering apparitions. Found entries reveal their full identity and lore.</div>
+      <div class="progress-sub">Native pond legends and wandering apparitions. Found entries reveal their names, colours, and the quiet old tales they carry.</div>
       <div class="legendary-list" id="legendaryList">${legendaryHtml}</div>
     </div>
     <div class="progress-card rank-card">
       <div class="progress-title">Rank Chronicle</div>
-      <div class="progress-sub">Titles earned through steady feeding, patience, and long attention to the water.</div>
+      <div class="progress-sub">Titles earned through steady feeding, patient hands, and long hours at the water's edge.</div>
       <div class="rank-list" id="rankList">${ranksHtml}</div>
     </div>
   `;
@@ -1840,6 +1891,8 @@ function buildJournal(){
 }
 function openPause(){
   if(!running)return;
+  clearHudDimTimer();
+  document.body.classList.remove('hud-dim');
   gamePaused=true;
   document.getElementById('pauseScreen').style.display='flex';
   document.getElementById('pauseBtn').textContent='▶';
@@ -1857,6 +1910,7 @@ function closePause(){
   pfxStop();
   stopMenuTrack();
   setTimeout(()=>{if(ac&&ac.state!=='running')ac.resume().catch(()=>{});startTrack(curTrack);},700);
+  wakeHud(true);
 }
 function goMainMenu(){
   gamePaused=false;
@@ -1868,6 +1922,8 @@ function goMainMenu(){
   document.getElementById('pauseBtn').style.display='none';
   document.getElementById('seasonBadge').style.display='none';
   document.getElementById('rankHud').style.display='none';
+  clearHudDimTimer();
+  document.body.classList.remove('hud-dim');
   closePanel();
   pfxStop();
   stopTrack();stopMenuTrack();
@@ -1946,6 +2002,7 @@ function saveWorld(){
 
 function switchScene(id){
   if(id===cur)return;
+  wakeHud(true);
   saveWorld(); // persist current world before leaving
   const fade=document.getElementById('fade');fade.style.opacity='1';
   setTimeout(()=>{
@@ -1960,22 +2017,28 @@ function switchScene(id){
 // ── Input ─────────────────────────────────────────────────────────────
 let pressTimer=null,pressing=false,pressX,pressY,feedIv=null;
 function onTap(x,y){
+  wakeHud(true);
   addRipple(x,y);
   fish.forEach(f=>f.scare(x,y));
   coveCreatures.forEach(c=>{if(c.scare)c.scare(x,y);});
 }
-function startPress(x,y){pressX=x;pressY=y;pressing=false;pressTimer=setTimeout(()=>{pressing=true;pellets.push(new Pellet(x,y));feedIv=setInterval(()=>{if(pressing)pellets.push(new Pellet(pressX+(Math.random()-.5)*18,pressY+(Math.random()-.5)*18));},320);},275);}
-function movePress(x,y){if(pressing){pressX=x;pressY=y;}}
-function endPress(x,y){if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}if(feedIv){clearInterval(feedIv);feedIv=null;}if(!pressing)onTap(x,y);pressing=false;}
+function startPress(x,y){wakeHud(true);pressX=x;pressY=y;pressing=false;pressTimer=setTimeout(()=>{pressing=true;pellets.push(new Pellet(x,y));feedIv=setInterval(()=>{if(pressing)pellets.push(new Pellet(pressX+(Math.random()-.5)*18,pressY+(Math.random()-.5)*18));},320);},275);}
+function movePress(x,y){wakeHud();if(pressing){pressX=x;pressY=y;}}
+function endPress(x,y){wakeHud(true);if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}if(feedIv){clearInterval(feedIv);feedIv=null;}if(!pressing)onTap(x,y);pressing=false;}
 cv.addEventListener('mousedown',e=>{if(!gamePaused)startPress(e.clientX,e.clientY);});
 cv.addEventListener('mousemove',e=>{if(pressing&&!gamePaused)movePress(e.clientX,e.clientY);});
 cv.addEventListener('mouseup',e=>{if(!gamePaused)endPress(e.clientX,e.clientY);});
 cv.addEventListener('touchstart',e=>{e.preventDefault();if(!gamePaused){const t=e.changedTouches[0];startPress(t.clientX,t.clientY);}},{passive:false});
 cv.addEventListener('touchmove',e=>{e.preventDefault();if(!gamePaused){const t=e.changedTouches[0];movePress(t.clientX,t.clientY);}},{passive:false});
 cv.addEventListener('touchend',e=>{e.preventDefault();if(!gamePaused){const t=e.changedTouches[0];endPress(t.clientX,t.clientY);}},{passive:false});
+document.addEventListener('pointermove',()=>wakeHud(),{passive:true});
+document.addEventListener('wheel',()=>wakeHud(),{passive:true});
+document.addEventListener('keydown',()=>wakeHud());
+document.addEventListener('mousedown',()=>wakeHud(),{passive:true});
+document.addEventListener('touchstart',()=>wakeHud(),{passive:true});
 
 // ── Fixed biome mood update ───────────────────────────────────────────
-function updateToD(stepMs){return;}
+function updateToD(){return;}
 
 // ── Main loop ─────────────────────────────────────────────────────────
 const FIXED_DT_MS=1000/60;
@@ -2030,14 +2093,15 @@ function startApp(){
   totalFed=sv.totalFed||0;
   discovered=sv.discovered||{};
   const ov=document.getElementById('overlay');ov.style.opacity='0';setTimeout(()=>ov.style.display='none',1200);
-  document.getElementById('ui').style.display='flex';
+  document.getElementById('ui').style.display='flex';updateHudAnchors();
   document.getElementById('musicBtn').style.display='flex';
   document.getElementById('pauseBtn').style.display='flex';
-  document.getElementById('seasonBadge').style.display='block';
+  document.getElementById('seasonBadge').style.display='none';
   requestAnimationFrame(syncHudMetrics);
   // Rank HUD
-  const hud=document.getElementById('rankHud');hud.style.display='flex';
+  const hud=document.getElementById('rankHud');updateHudAnchors();hud.style.display='flex';
   updateRankHud();
+  wakeHud(true);
   // Centered start hint — shows for ~2.8s then fades
   const sh=document.getElementById('startHint');
   sh.style.display='block';
