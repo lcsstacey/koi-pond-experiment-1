@@ -36,14 +36,14 @@ body.hud-dim #menu{opacity:.28}
 #musicBtn{left:1rem;font-size:1rem}
 #musicBtn.on{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9)}
 #notif{display:none}
-#notifStack{position:fixed;right:var(--hud-side-gap);bottom:var(--hud-gap);display:flex;flex-direction:column-reverse;align-items:stretch;gap:9px;z-index:14;pointer-events:none;width:var(--hud-right-w);max-width:var(--hud-right-w)}
-.stack-notif{width:100%;min-width:0;max-width:none;min-height:var(--hud-pill-h);display:flex;flex-direction:column;justify-content:center;background:rgba(6,16,18,.84);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(78,200,180,.2);border-radius:16px;padding:.54rem .86rem;box-shadow:0 14px 34px rgba(0,0,0,.22);opacity:0;transform:translateX(14px) translateY(4px);filter:blur(5px);transition:opacity 2.15s cubic-bezier(.19,1,.22,1),transform 2.15s cubic-bezier(.19,1,.22,1),filter 2.15s cubic-bezier(.19,1,.22,1);border-left-width:3px;will-change:transform,opacity,filter;overflow:hidden}
-.stack-notif.show{opacity:1;transform:translateX(0) translateY(0);filter:blur(0)}
-.stack-notif.exit{opacity:0;transform:translateX(4px) translateY(1px);filter:blur(2px)}
-.stack-notif.music{border-color:rgba(78,200,180,.26);border-left-color:rgba(108,224,205,.72)}
-.stack-notif.legendary{border-color:rgba(255,223,155,.26);border-left-color:rgba(255,223,155,.76);background:rgba(14,12,10,.82)}
-.stack-notif .sn-title{color:rgba(245,250,248,.94);font-size:clamp(.58rem,.9vw,.72rem);letter-spacing:.14em;font-family:Georgia,serif;text-transform:uppercase;line-height:1.18}
-.stack-notif .sn-sub{color:rgba(200,228,220,.5);font-size:clamp(.52rem,.82vw,.61rem);letter-spacing:.07em;line-height:1.38;font-family:Georgia,serif;margin-top:3px}
+#notifStack{position:fixed;right:var(--hud-side-gap);bottom:var(--hud-gap);display:flex;flex-direction:column;align-items:stretch;gap:9px;z-index:14;pointer-events:none;width:var(--hud-right-w);max-width:var(--hud-right-w)}
+.stack-notif{width:100%;min-width:0;max-width:none;min-height:var(--hud-pill-h);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:rgba(0,0,0,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(168,223,212,.14);border-radius:16px;padding:.5rem .8rem;box-shadow:0 12px 26px rgba(0,0,0,.16);opacity:0;transform:translateY(8px);filter:blur(4px);transition:opacity 1.7s cubic-bezier(.22,1,.36,1),transform 1.7s cubic-bezier(.22,1,.36,1),filter 1.7s cubic-bezier(.22,1,.36,1);border-left-width:3px;border-right-width:3px;will-change:transform,opacity,filter;overflow:hidden}
+.stack-notif.show{opacity:1;transform:translateY(0);filter:blur(0)}
+.stack-notif.exit{opacity:0;transform:translateY(6px);filter:blur(2px)}
+.stack-notif.music{border-color:rgba(78,200,180,.2);border-left-color:rgba(108,224,205,.52);border-right-color:rgba(108,224,205,.52)}
+.stack-notif.legendary{border-color:rgba(255,223,155,.2);border-left-color:rgba(255,223,155,.58);border-right-color:rgba(255,223,155,.58);background:rgba(10,8,6,.36)}
+.stack-notif .sn-title{width:100%;color:rgba(245,250,248,.94);font-size:clamp(.58rem,.9vw,.72rem);letter-spacing:.14em;font-family:Georgia,serif;text-transform:uppercase;line-height:1.18;text-align:center}
+.stack-notif .sn-sub{width:100%;color:rgba(200,228,220,.5);font-size:clamp(.52rem,.82vw,.61rem);letter-spacing:.07em;line-height:1.38;font-family:Georgia,serif;margin-top:3px;text-align:center}
 .stack-notif.legendary .sn-title{color:rgba(255,239,208,.96)}
 .stack-notif.legendary .sn-sub{color:rgba(245,222,186,.58)}
 #hint{display:none}
@@ -1597,6 +1597,22 @@ function startTrack(id){
 // ── Notifications ─────────────────────────────────────────────────────
 const LEGENDARY_TELL_DELAY_MS=10000;
 let legendaryTellCooldown=0,sceneEnterTs=0,sceneElapsedMs=0,sceneLegendaryTells=new Set(),notifSeq=0;
+function animateNotifReflow(host,before){
+  const survivors=[...host.children];
+  requestAnimationFrame(()=>{
+    survivors.forEach(node=>{
+      const prev=before.get(node);
+      if(prev==null)return;
+      const next=node.getBoundingClientRect().top;
+      const dy=prev-next;
+      if(Math.abs(dy)<1)return;
+      node.animate([
+        {transform:`translateY(${dy}px)`},
+        {transform:'translateY(0px)'}
+      ],{duration:1500,easing:'cubic-bezier(.22,1,.36,1)'});
+    });
+  });
+}
 function pushStackNotif({title,sub='',tone='music',life=10000}){
   const host=document.getElementById('notifStack');
   if(!host)return;
@@ -1607,13 +1623,18 @@ function pushStackNotif({title,sub='',tone='music',life=10000}){
   el.innerHTML=`<div class="sn-title">${title}</div>${sub?`<div class="sn-sub">${sub}</div>`:''}`;
   host.appendChild(el);
   requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
-  const removeNode=(node,delay=2300)=>setTimeout(()=>node.remove(),delay);
   const close=(node=el)=>{
     if(!node||node.dataset.closing==='1')return;
     node.dataset.closing='1';
     node.classList.remove('show');
     node.classList.add('exit');
-    removeNode(node);
+    const before=new Map([...host.children].filter(n=>n!==node).map(n=>[n,n.getBoundingClientRect().top]));
+    setTimeout(()=>{
+      if(node.parentNode===host){
+        node.remove();
+        animateNotifReflow(host,before);
+      }
+    },1800);
   };
   setTimeout(()=>close(el),life);
   while(host.children.length>5){
