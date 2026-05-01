@@ -6,7 +6,7 @@ final class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.012, green: 0.051, blue: 0.051, alpha: 1.0)
-        addPondGradient()
+        addPondBackground()
         spawnKoi()
     }
 
@@ -22,12 +22,12 @@ final class GameScene: SKScene {
         }
     }
 
-    private func addPondGradient() {
-        let gradient = SKShapeNode(rect: self.frame)
-        gradient.fillColor = SKColor(red: 0.04, green: 0.16, blue: 0.16, alpha: 1.0)
-        gradient.strokeColor = .clear
-        gradient.zPosition = -10
-        addChild(gradient)
+    private func addPondBackground() {
+        let bg = SKShapeNode(rect: self.frame)
+        bg.fillColor = SKColor(red: 0.04, green: 0.16, blue: 0.16, alpha: 1.0)
+        bg.strokeColor = .clear
+        bg.zPosition = -10
+        addChild(bg)
     }
 
     private func spawnKoi() {
