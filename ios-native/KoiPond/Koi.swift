@@ -9,9 +9,9 @@ final class Koi: SKNode {
     private let maxSpeed: CGFloat = 70
     private let turnRate: CGFloat = 1.8
     private let avoidRadius: CGFloat = 56
+    private let minSeparation: CGFloat = 6   // floor on neighbor distance, prevents force singularity at overlap
 
     private let body: SKShapeNode
-    private var lastUpdate: TimeInterval = 0
 
     init(bounds: CGRect) {
         self.bounds = bounds
@@ -45,28 +45,24 @@ final class Koi: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func tick(neighbors: [Koi]) {
-        let now = CACurrentMediaTime()
-        let dt = lastUpdate == 0 ? 1.0 / 60.0 : min(now - lastUpdate, 1.0 / 30.0)
-        lastUpdate = now
-
+    func tick(dt: CGFloat, neighbors: [Koi]) {
         var steer = CGVector.zero
         for other in neighbors where other !== self {
             let dx = position.x - other.position.x
             let dy = position.y - other.position.y
             let distSq = dx * dx + dy * dy
             if distSq > 0 && distSq < avoidRadius * avoidRadius {
-                let dist = sqrt(distSq)
-                steer.dx += (dx / dist) / dist * 800
-                steer.dy += (dy / dist) / dist * 800
+                let dist = max(sqrt(distSq), minSeparation)
+                steer.dx += (dx / dist) * (800 / dist)
+                steer.dy += (dy / dist) * (800 / dist)
             }
         }
 
         steer.dx += .random(in: -8...8)
         steer.dy += .random(in: -8...8)
 
-        velocity.dx += steer.dx * CGFloat(dt) * turnRate
-        velocity.dy += steer.dy * CGFloat(dt) * turnRate
+        velocity.dx += steer.dx * dt * turnRate
+        velocity.dy += steer.dy * dt * turnRate
 
         let speed = sqrt(velocity.dx * velocity.dx + velocity.dy * velocity.dy)
         if speed > maxSpeed {
@@ -74,14 +70,18 @@ final class Koi: SKNode {
             velocity.dy = velocity.dy / speed * maxSpeed
         }
 
-        position.x += velocity.dx * CGFloat(dt)
-        position.y += velocity.dy * CGFloat(dt)
+        position.x += velocity.dx * dt
+        position.y += velocity.dy * dt
 
-        if position.x < bounds.minX { position.x = bounds.maxX }
-        if position.x > bounds.maxX { position.x = bounds.minX }
-        if position.y < bounds.minY { position.y = bounds.maxY }
-        if position.y > bounds.maxY { position.y = bounds.minY }
+        if !bounds.isEmpty {
+            if position.x < bounds.minX { position.x = bounds.maxX }
+            if position.x > bounds.maxX { position.x = bounds.minX }
+            if position.y < bounds.minY { position.y = bounds.maxY }
+            if position.y > bounds.maxY { position.y = bounds.minY }
+        }
 
-        zRotation = atan2(velocity.dy, velocity.dx)
+        if speed > 0.001 {
+            zRotation = atan2(velocity.dy, velocity.dx)
+        }
     }
 }

@@ -3,19 +3,21 @@ import SpriteKit
 
 final class GameViewController: UIViewController {
     override func loadView() {
-        let view = SKView(frame: UIScreen.main.bounds)
-        view.ignoresSiblingOrder = true
-        view.preferredFramesPerSecond = 60
-        self.view = view
+        let skView = SKView()
+        skView.ignoresSiblingOrder = true
+        skView.preferredFramesPerSecond = 60
+        skView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.view = skView
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         guard let skView = view as? SKView else { return }
-
-        let scene = GameScene(size: skView.bounds.size)
-        scene.scaleMode = .resizeFill
-        skView.presentScene(scene)
+        if skView.scene == nil, skView.bounds.size != .zero {
+            let scene = GameScene(size: skView.bounds.size)
+            scene.scaleMode = .resizeFill
+            skView.presentScene(scene)
+        }
     }
 
     override var prefersStatusBarHidden: Bool { true }
