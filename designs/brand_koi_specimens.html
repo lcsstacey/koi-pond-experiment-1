@@ -1,24 +1,34 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Seisuitei · Koi Specimens</title>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Seisuitei · Koi Specimens</title>
 <style>
   *{box-sizing:border-box}
-  html,body{margin:0;background:#030d0d;color:#e5e7eb;font-family:Georgia,"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
-  body{padding:28px 24px;background:radial-gradient(circle at 50% 42%, #0e3232 0%, #071c1c 60%, #030d0d 100%);min-height:100vh}
+  html,body{margin:0;height:100%;background:#030d0d;color:#e5e7eb;font-family:Georgia,"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;-webkit-font-smoothing:antialiased}
+  /* WKWebView in this app has scrollEnabled=false; use an inner scroller so the page works inside Capacitor and in mobile Safari */
+  .scroll{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(circle at 50% 42%, #0e3232 0%, #071c1c 60%, #030d0d 100%);overscroll-behavior:contain}
+  .page{padding:calc(28px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) calc(24px + env(safe-area-inset-left,0px));max-width:1100px;margin:0 auto}
   .section-lbl{font-family:Georgia,serif;font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(168,223,212,.42);margin:6px 0 14px;text-align:center;}
   .section-lbl.gold{color:rgba(255,215,130,.6);}
   .section-lbl.warn{color:rgba(220,140,110,.65);}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 14px;margin-bottom:22px;}
-  @media (max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:600px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:360px){.grid{grid-template-columns:1fr}}
   .koi{display:flex;flex-direction:column;align-items:center;gap:7px;}
-  .koi svg{filter:drop-shadow(0 6px 14px rgba(0,0,0,0.45));}
-  .name{font-size:.7rem;letter-spacing:.13em;color:rgba(255,255,255,.88);font-family:Georgia,serif;}
+  .koi svg{width:100%;max-width:150px;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.45));}
+  .name{font-size:.7rem;letter-spacing:.13em;color:rgba(255,255,255,.88);font-family:Georgia,serif;text-align:center}
   .name.legend{color:#ffe08a;text-shadow:0 0 12px rgba(255,215,130,.34);}
   .name.warn{color:#e8a48b;}
-  .latin{font-size:.52rem;letter-spacing:.1em;color:rgba(168,223,212,.5);font-style:italic;font-family:Georgia,serif;}
+  .latin{font-size:.52rem;letter-spacing:.1em;color:rgba(168,223,212,.5);font-style:italic;font-family:Georgia,serif;text-align:center}
   .latin.warn{color:rgba(220,140,110,.55);}
   .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(168,223,212,.18),transparent);margin:18px 0 6px;}
+  .back{margin-top:2.4rem;text-align:center;font-size:.6rem;letter-spacing:.28em;text-transform:uppercase}
+  .back a{color:rgba(168,223,212,.55);text-decoration:none;border-bottom:1px solid rgba(168,223,212,.25);padding-bottom:2px;-webkit-tap-highlight-color:transparent}
+  .back a:hover,.back a:focus-visible{color:#a8dfd4;outline:none}
 </style></head>
 <body>
+<div class="scroll"><div class="page">
 
 <!-- ─── COMMONS ─── -->
 <div class="section-lbl">Common varieties · 11</div>
@@ -615,4 +625,6 @@
 
 </div>
 
+<p class="back"><a href="index.html">← Back</a></p>
+</div></div>
 </body></html>

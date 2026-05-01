@@ -54,4 +54,16 @@ if (/<\/head>/i.test(html)) {
 
 fs.writeFileSync(path.join(wwwDir, 'index.html'), html);
 console.log('[sync-web] index.html -> www/index.html (with iOS safe-area overrides)');
+
+// Copy the designs/ folder verbatim — those pages already include their
+// own viewport meta and safe-area padding, and use an inner scroll wrapper
+// so they work inside the WKWebView (which has scrollEnabled=false).
+const designsSrc = path.join(root, 'designs');
+const designsDst = path.join(wwwDir, 'designs');
+if (fs.existsSync(designsSrc)) {
+  fs.rmSync(designsDst, { recursive: true, force: true });
+  fs.cpSync(designsSrc, designsDst, { recursive: true });
+  console.log('[sync-web] designs/ -> www/designs/');
+}
+
 console.log('[sync-web] done');
