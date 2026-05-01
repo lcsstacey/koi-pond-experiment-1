@@ -172,6 +172,18 @@ but for a meditative app the unadorned shots will do more work.
 
 ---
 
+## Re-rendering the App Icon
+`docs/icon.png` is the rendered 1024×1024 source. To regenerate from `docs/icon.svg`:
+```sh
+# librsvg
+rsvg-convert -w 1024 -h 1024 docs/icon.svg -o docs/icon.png
+# or Inkscape
+inkscape docs/icon.svg --export-type=png --export-width=1024 --export-filename=docs/icon.png
+```
+Drop the resulting PNG into `Xcode → Assets.xcassets → AppIcon` (the 1024 slot). Xcode will derive every other size automatically. The icon is intentionally edge-to-edge and fully opaque — iOS applies the corner radius itself.
+
+---
+
 ## Encryption Export Compliance
 In `Info.plist` add:
 ```xml

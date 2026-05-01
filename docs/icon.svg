@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Seisuitei  App Icon  1024x1024
-  Source artwork. Export to PNG at 1024x1024 (no alpha) and drop into
-  Xcode  Assets.xcassets  AppIcon. iOS will auto-mask the ~22% corner
-  radius, so this canvas is intentionally edge-to-edge.
-
-  Export commands (run from repo root):
-    rsvg-convert -w 1024 -h 1024 docs/icon.svg -o docs/icon.png
-    inkscape docs/icon.svg  export-type=png  export-width=1024  export-filename=docs/icon.png
--->
+<!-- Seisuitei app icon. 1024x1024, edge-to-edge, opaque RGB. iOS applies the corner mask. See docs/app-store-listing.md for export commands. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <!-- pond background — deep teal radial -->
