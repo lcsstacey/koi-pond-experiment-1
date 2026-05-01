@@ -302,6 +302,7 @@ body.zen #zenHint{opacity:.55}
         <div class="ps-panel-label">Options</div>
         <div class="ps-row-fill">
           <button class="ps-btn" onclick="setPauseTab('progress')">Progress</button>
+          <button class="ps-btn" onclick="openDesigns()">Designs</button>
           <button class="ps-btn" onclick="closePause()">Resume</button>
         </div>
       </div>
@@ -2040,6 +2041,10 @@ function goMainMenu(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ov.style.opacity='1';}));
   setTimeout(()=>{if(ac)ac.resume().then(()=>startMenuTrack());},300);
   // NB: render loop is left running
+}
+function openDesigns(){
+  saveWorld();
+  location.href='designs/index.html';
 }
 
 // ── Scene management ──────────────────────────────────────────────────
