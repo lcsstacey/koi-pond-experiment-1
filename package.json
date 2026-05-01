@@ -1,0 +1,20 @@
+{
+  "name": "koi-pond-experiment-1",
+  "version": "1.0.0",
+  "description": "Seisuitei koi pond simulation, packaged for iOS via Capacitor.",
+  "private": true,
+  "scripts": {
+    "build:web": "node scripts/sync-web.js",
+    "ios:init": "npm run build:web && npx cap add ios",
+    "ios:sync": "npm run build:web && npx cap sync ios",
+    "ios:open": "npm run ios:sync && npx cap open ios",
+    "ios:run": "npm run ios:sync && npx cap run ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

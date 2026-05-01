@@ -1,0 +1,14 @@
+{
+  "appId": "com.seisuitei.koipond",
+  "appName": "Seisuitei",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true,
+    "backgroundColor": "#030d0d"
+  },
+  "server": {
+    "iosScheme": "seisuitei"
+  }
+}
