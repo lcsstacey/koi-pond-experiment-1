@@ -4,6 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>静水庭 | Seisuitei</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Shippori+Mincho+B1:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-jp:'Shippori Mincho B1','Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+/* ── Type system overrides (merged from design system) ── */
+#overlay h1{font-family:var(--font-jp)!important;font-weight:600!important}
+#overlay h1 .title-en{font-family:var(--font-display)!important;font-weight:500!important;font-style:italic!important}
+#overlay p,.ebtn,#author,
+.sb,.tn,.ts,
+#startHint .sh1,#startHint .sh2,
+#rankHud .rh-name,#rankHud .rh-sub,#rankHud .rh-meta,
+.stack-notif .sn-title,.stack-notif .sn-sub,
+.ps-title-block h2,.ps-title-block p,
+.ps-panel-label,.ps-tab,
+.progress-title,.progress-main,.progress-sub,
+.legendary-name,.legendary-sub,.legendary-lore,
+.rank-row-name,.rank-row-sub,.rank-row-desc,
+.ps-btn,.ps-btn-full,.ps-credit,
+.fish-name,.fish-species,.fish-mood,.fish-fed,.fish-days,.fish-trait,.fish-lore,
+#zenHint,#seasonBadge,
+.legendary-lock{font-family:var(--font-display)!important}
+.ps-title-block h2{font-family:var(--font-jp)!important;font-weight:600!important}
+.fish-species,.fish-trait,.legendary-lore,.fish-lore,.rank-row-sub{font-style:italic}
+.fish-name,.legendary-name,.rank-row-name{font-weight:500;letter-spacing:.10em}
+/* HUD pulse on +1 fed */
+#rankHud{transition:transform .3s cubic-bezier(.4,2,.6,1),box-shadow .3s,opacity 1.45s cubic-bezier(.22,1,.36,1),filter 1.45s cubic-bezier(.22,1,.36,1)}
+#rankHud.hud-pulse{transform:scale(1.04);box-shadow:0 12px 26px rgba(0,0,0,.16),0 0 26px rgba(255,210,138,.32)}
+#rankHud.hud-pulse .rh-name{color:#ffe7b8;text-shadow:0 0 14px rgba(255,210,138,.7)}
+</style>
 <style>
 :root{--hud-bar-h:58px;--hud-pill-h:44px;--hud-gap:10px;--hud-side-gap:14px;--hud-left-w:248px;--hud-right-w:248px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -645,7 +679,15 @@ function updateRankHud(){
     document.getElementById('rankMeta').textContent=totalFed+' fed';
   }
 }
-function bumpFed(){totalFed++;updateRankHud();const s=getSave();s.totalFed=totalFed;writeSave(s);}
+function bumpFed(x,y){
+  totalFed++;updateRankHud();
+  const s=getSave();s.totalFed=totalFed;writeSave(s);
+  // +1 burst at eat location
+  if(typeof x==='number'&&typeof y==='number')eatBursts.push(new EatBurst(x,y));
+  // HUD pulse
+  const rh=document.getElementById('rankHud');
+  if(rh){rh.classList.add('hud-pulse');setTimeout(()=>rh.classList.remove('hud-pulse'),320);}
+}
 
 function updateHudAnchors(){
   const menu=document.getElementById('menu');
@@ -1104,10 +1146,48 @@ class Particle{
 
 // ── Pellets ───────────────────────────────────────────────────────────
 let pellets=[];
+let eatBursts=[];
+class EatBurst{
+  constructor(x,y){this.x=x;this.y=y;this.life=1;this.sparks=[];
+    for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2,sp=.6+Math.random()*1.4;
+      this.sparks.push({x:0,y:0,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-.3,r:.8+Math.random()*1.2,life:1});}
+    this.txtY=0;
+  }
+  update(){this.life-=.018;this.txtY-=.55;for(const s of this.sparks){s.x+=s.vx;s.y+=s.vy;s.vy+=.04;s.vx*=.97;s.vy*=.97;s.life-=.022;}}
+  draw(){if(this.life<=0)return;ctx.save();ctx.translate(this.x,this.y);
+    for(const s of this.sparks){if(s.life<=0)continue;
+      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*3);
+      g.addColorStop(0,`rgba(255,231,184,${s.life})`);g.addColorStop(1,'rgba(255,180,90,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,s.r*3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=`rgba(255,245,220,${s.life})`;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}
+    // floating "+1"
+    if(this.life>.2){
+      ctx.globalAlpha=Math.min(1,this.life*1.4);
+      ctx.font='italic 500 14px '+(getComputedStyle(document.documentElement).getPropertyValue('--font-display').trim()||'Georgia, serif');
+      ctx.fillStyle='rgba(255,231,184,1)';ctx.textAlign='center';
+      ctx.shadowColor='rgba(255,200,120,.7)';ctx.shadowBlur=8;
+      ctx.fillText('+1',0,this.txtY-4);
+      ctx.shadowBlur=0;ctx.globalAlpha=1;
+    }
+    ctx.restore();
+  }
+}
 class Pellet{
   constructor(x,y){this.x=x;this.y=y;this.life=1;this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;}
   update(){this.x+=this.vx;this.y+=this.vy;this.vx*=.96;this.vy*=.96;this.life-=.0005;}
-  draw(){ctx.beginPath();ctx.arc(this.x,this.y,3.5,0,Math.PI*2);ctx.fillStyle=`rgba(210,168,85,${this.life})`;ctx.fill();ctx.beginPath();ctx.arc(this.x-.8,this.y-.8,1,0,Math.PI*2);ctx.fillStyle=`rgba(255,218,135,${this.life*.7})`;ctx.fill();}
+  draw(){
+    const a=this.life;
+    // halo
+    const halo=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,14);
+    halo.addColorStop(0,`rgba(255,210,138,${a*.55})`);halo.addColorStop(.55,`rgba(244,166,76,${a*.18})`);halo.addColorStop(1,'rgba(244,166,76,0)');
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(this.x,this.y,14,0,Math.PI*2);ctx.fill();
+    // bead
+    const bead=ctx.createRadialGradient(this.x-1.2,this.y-1.4,0,this.x,this.y,6);
+    bead.addColorStop(0,`rgba(255,232,180,${a})`);bead.addColorStop(.55,`rgba(244,166,76,${a})`);bead.addColorStop(1,`rgba(160,90,30,${a})`);
+    ctx.fillStyle=bead;ctx.beginPath();ctx.arc(this.x,this.y,5,0,Math.PI*2);ctx.fill();
+    // shimmer highlight
+    ctx.fillStyle=`rgba(255,250,230,${a*.85})`;ctx.beginPath();ctx.arc(this.x-1.4,this.y-1.6,1.1,0,Math.PI*2);ctx.fill();
+  }
 }
 
 // ── Rocky Cove Menacing Fish (Eel + Snapper) ─────────────────────────
@@ -1389,7 +1469,7 @@ class Koi{
         for(const p of pellets){const d=Math.hypot(p.x-this.x,p.y-this.y);if(d<nd){nd=d;near=p;}}
         if(near){
           this.tA=Math.atan2(near.y-this.y,near.x-this.x);
-          if(nd<14){pellets=pellets.filter(p=>p!==near);this.pelletsEaten++;playEat();bumpFed();}
+          if(nd<14){pellets=pellets.filter(p=>p!==near);this.pelletsEaten++;playEat();bumpFed(near.x,near.y);}
         }
       } else {
         this.wt--;
@@ -2043,7 +2123,7 @@ function onTap(x,y){
   fish.forEach(f=>f.scare(x,y));
   coveCreatures.forEach(c=>{if(c.scare)c.scare(x,y);});
 }
-function startPress(x,y){wakeHud(true);pressX=x;pressY=y;pressing=false;pressTimer=setTimeout(()=>{pressing=true;pellets.push(new Pellet(x,y));feedIv=setInterval(()=>{if(pressing)pellets.push(new Pellet(pressX+(Math.random()-.5)*18,pressY+(Math.random()-.5)*18));},320);},275);}
+function startPress(x,y){wakeHud(true);pressX=x;pressY=y;pressing=false;pressTimer=setTimeout(()=>{pressing=true;pellets.push(new Pellet(x,y));addRipple(x,y,.55);feedIv=setInterval(()=>{if(pressing){const px=pressX+(Math.random()-.5)*18,py=pressY+(Math.random()-.5)*18;pellets.push(new Pellet(px,py));addRipple(px,py,.4);}},320);},275);}
 function movePress(x,y){wakeHud();if(pressing){pressX=x;pressY=y;}}
 function endPress(x,y){wakeHud(true);if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}if(feedIv){clearInterval(feedIv);feedIv=null;}if(!pressing)onTap(x,y);pressing=false;}
 cv.addEventListener('mousedown',e=>{if(!gamePaused)startPress(e.clientX,e.clientY);});
@@ -2101,6 +2181,10 @@ function loop(ts){
   pellets=pellets.filter(p=>p.life>0);
   for(const p of particles)if(p.type!=='firefly')p.draw();
   for(const p of pellets)p.draw();
+  // eat bursts (+1 sparkles)
+  for(const b of eatBursts)b.update();
+  eatBursts=eatBursts.filter(b=>b.life>0);
+  for(const b of eatBursts)b.draw();
   drawRipples();
   for(const p of particles)if(p.type==='firefly')p.draw();
   for(const l of lanterns)l.draw();
