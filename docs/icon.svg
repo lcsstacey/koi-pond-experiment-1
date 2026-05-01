@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Seisuitei  App Icon  1024x1024
+  Source artwork. Export to PNG at 1024x1024 (no alpha) and drop into
+  Xcode  Assets.xcassets  AppIcon. iOS will auto-mask the ~22% corner
+  radius, so this canvas is intentionally edge-to-edge.
+
+  Export commands (run from repo root):
+    rsvg-convert -w 1024 -h 1024 docs/icon.svg -o docs/icon.png
+    inkscape docs/icon.svg  export-type=png  export-width=1024  export-filename=docs/icon.png
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- pond background — deep teal radial -->
+    <radialGradient id="pond" cx="42%" cy="34%" r="78%">
+      <stop offset="0%"  stop-color="#155656"/>
+      <stop offset="42%" stop-color="#0e3232"/>
+      <stop offset="78%" stop-color="#071c1c"/>
+      <stop offset="100%" stop-color="#02080a"/>
+    </radialGradient>
+
+    <!-- vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.45"/>
+    </radialGradient>
+
+    <!-- koi body — pearled white -->
+    <radialGradient id="koiBody" cx="38%" cy="28%" r="72%">
+      <stop offset="0%"   stop-color="#ffffff"/>
+      <stop offset="55%"  stop-color="#f5f4ee"/>
+      <stop offset="100%" stop-color="#bcbab2"/>
+    </radialGradient>
+
+    <!-- crimson medallion -->
+    <radialGradient id="medallion" cx="38%" cy="35%" r="68%">
+      <stop offset="0%"  stop-color="#e63946"/>
+      <stop offset="60%" stop-color="#b81b25"/>
+      <stop offset="100%" stop-color="#691216"/>
+    </radialGradient>
+
+    <!-- koi shape clip (so internal details stay inside the body silhouette) -->
+    <clipPath id="bodyClip">
+      <path d="M 200,512 C 200,372 320,300 512,300 C 716,300 870,360 870,512 C 870,664 716,724 512,724 C 320,724 200,652 200,512 Z"/>
+    </clipPath>
+
+    <!-- shadow blur -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+
+    <!-- ripple stroke gradient -->
+    <radialGradient id="ripple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a8dfd4" stop-opacity="0"/>
+      <stop offset="80%" stop-color="#a8dfd4" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#a8dfd4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background must be opaque + edge-to-edge (no transparency for App Store icons) -->
+  <rect width="1024" height="1024" fill="url(#pond)"/>
+
+  <!-- soft concentric ripples behind the koi -->
+  <g opacity="0.55">
+    <circle cx="512" cy="512" r="430" fill="none" stroke="url(#ripple)" stroke-width="2"/>
+    <circle cx="512" cy="512" r="340" fill="none" stroke="#a8dfd4" stroke-opacity="0.06" stroke-width="1.4"/>
+    <circle cx="512" cy="512" r="250" fill="none" stroke="#a8dfd4" stroke-opacity="0.08" stroke-width="1.2"/>
+  </g>
+
+  <!-- Koi composition rotated for visual interest -->
+  <g transform="rotate(-14 512 512)">
+
+    <!-- depth shadow under fish -->
+    <ellipse cx="520" cy="560" rx="350" ry="50" fill="#000" opacity="0.55" filter="url(#softShadow)"/>
+
+    <!-- tail fin (translucent) -->
+    <g opacity="0.85">
+      <path d="M 200,512 L 90,400 Q 60,512 90,624 Z" fill="#ffffff" fill-opacity="0.55"/>
+      <path d="M 200,512 L 130,452 Q 118,512 130,572 Z" fill="#ffffff" fill-opacity="0.85"/>
+    </g>
+
+    <!-- pectoral fins -->
+    <ellipse cx="470" cy="240" rx="92" ry="34" fill="#ffffff" fill-opacity="0.55" transform="rotate(-22 470 240)"/>
+    <ellipse cx="470" cy="784" rx="92" ry="34" fill="#ffffff" fill-opacity="0.55" transform="rotate(22 470 784)"/>
+
+    <!-- main body -->
+    <path d="M 200,512 C 200,372 320,300 512,300 C 716,300 870,360 870,512 C 870,664 716,724 512,724 C 320,724 200,652 200,512 Z"
+          fill="url(#koiBody)"/>
+
+    <!-- dorsal seam -->
+    <path d="M 480,300 Q 600,260 760,310" fill="none" stroke="#c9c6bc" stroke-opacity="0.55" stroke-width="3"/>
+
+    <!-- markings inside body silhouette -->
+    <g clip-path="url(#bodyClip)">
+      <!-- secondary kohaku patches add depth without dominating -->
+      <ellipse cx="370" cy="430" rx="58" ry="34" fill="#c81e26" opacity="0.85"/>
+      <ellipse cx="430" cy="600" rx="42" ry="28" fill="#a51820" opacity="0.7"/>
+      <!-- subtle scale shimmer top -->
+      <ellipse cx="500" cy="360" rx="260" ry="26" fill="#ffffff" opacity="0.42"/>
+      <!-- subtle belly highlight -->
+      <ellipse cx="540" cy="680" rx="240" ry="20" fill="#ffffff" opacity="0.18"/>
+    </g>
+
+    <!-- single Tancho medallion on the head — the iconic mark -->
+    <circle cx="770" cy="486" r="92" fill="url(#medallion)"/>
+    <circle cx="770" cy="486" r="92" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"/>
+    <ellipse cx="746" cy="458" rx="22" ry="10" fill="#ffffff" opacity="0.45"/>
+
+    <!-- eye -->
+    <circle cx="838" cy="498" r="11" fill="#0a0a0a"/>
+    <circle cx="841" cy="494" r="3.5" fill="#ffffff" opacity="0.85"/>
+  </g>
+
+  <!-- final vignette -->
+  <rect width="1024" height="1024" fill="url(#vignette)"/>
+</svg>
