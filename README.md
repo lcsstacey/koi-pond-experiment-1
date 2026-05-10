@@ -4,11 +4,11 @@
 
 ### Seisuitei
 
-<img width="6688" height="3764" alt="seisuitei-img" src="https://github.com/user-attachments/assets/c1bc56d8-09f5-4918-8e81-72bd67d5e75e" />
+<img src="docs/seisuitei-img.png" alt="Seisuitei — a meditative koi pond" width="100%">
 
 *A meditative koi pond, hand‑rendered on canvas.*
 
-[**Live demo →**](https://lcsstacey.github.io/seisuitei/)
+[**Live demo →**](https://seisuitei.vercel.app/)
 
 </div>
 
@@ -84,6 +84,6 @@ Requirements: macOS with Xcode 15+, Node 18+, CocoaPods, and an Apple Developer 
 
 © 2026 Lucas Stacey. All rights reserved.
 
-This repository is published as a portfolio piece. The source, art, and audio synthesis are not licensed for reuse, redistribution, or derivative works. You are welcome to view the code and play the [live demo](https://lcsstacey.github.io/seisuitei/) — please do not copy it.
+This repository is published as a portfolio piece. The source, art, and audio synthesis are not licensed for reuse, redistribution, or derivative works. You are welcome to view the code and play the [live demo](https://seisuitei.vercel.app/) — please do not copy it.
 
 For licensing enquiries, open an issue.
