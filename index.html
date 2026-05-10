@@ -107,8 +107,9 @@ body.zen #zenDim{opacity:.82}
 #todArc canvas{width:90px;height:52px;}
 
 /* ── Pause Screen — full redesign ── */
-#pauseScreen{position:fixed;inset:0;background:rgba(3,10,10,.94);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);z-index:25;display:none;overflow:hidden}
-/* FX canvas is a sibling of the scroll wrapper — does NOT scroll with content */
+/* Snapshot-blur backdrop instead of live backdrop-filter: one blur on pause-open vs 60/sec while paused */
+#pauseScreen{position:fixed;inset:0;background:rgba(3,10,10,.62);z-index:25;display:none;overflow:hidden}
+#pauseBackdrop{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #pauseFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 /* All scrollable pause content lives in here */
 #pauseScroll{position:absolute;inset:0;z-index:2;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
@@ -272,6 +273,7 @@ body.zen #zenHint{opacity:.55}
 
 <!-- ── Pause Screen ── -->
 <div id="pauseScreen">
+  <canvas id="pauseBackdrop"></canvas>
   <canvas id="pauseFx"></canvas>
   <div id="pauseScroll">
     <div class="ps-header">
@@ -1862,6 +1864,11 @@ class Koi{
     this.bc=jitterHex(sp.colors.b,this.colorSeed);
     this.mc=jitterHex(sp.colors.m,this.colorSeed*1.7+.3);
     this.fc=jitterHex(sp.colors.f,this.colorSeed*2.1+.7);
+    // Resolve pattern + body gradient once at construction (was rebuilt every frame for every koi)
+    this.drawPattern=KOI_PATTERNS[this.species]||KOI_PATTERNS.default;
+    const bgs=this.s,_bg=ctx.createLinearGradient(-bgs*.6,-bgs*.3,bgs*.5,bgs*.3);
+    _bg.addColorStop(0,this.fc);_bg.addColorStop(.45,this.bc);_bg.addColorStop(1,this.fc);
+    this.bgGrad=_bg;
     this.longDesc=composeDesc(this.descIdx);
     // Discovered tracking for rare species
     if(this.isRare&&!discovered[this.species]){discovered[this.species]=true;const sv=getSave();sv.discovered=discovered;writeSave(sv);}
@@ -1973,8 +1980,8 @@ class Koi{
     ctx.save();ctx.translate(-s*.82,0);ctx.rotate(wag);
     [-1,1].forEach(sg=>{ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(-s*.58,sg*s*.24,-s*.84,sg*s*.55);ctx.quadraticCurveTo(-s*.42,sg*s*.14,0,0);ctx.fillStyle=this.fc;ctx.globalAlpha=.78*da;ctx.fill();});ctx.restore();
     ctx.beginPath();ctx.moveTo(s,0);ctx.bezierCurveTo(s*.72,-s*.37,-s*.52,-s*.37,-s*.82,0);ctx.bezierCurveTo(-s*.52,s*.37,s*.72,s*.37,s,0);
-    const bg=ctx.createLinearGradient(-s*.6,-s*.3,s*.5,s*.3);bg.addColorStop(0,this.fc);bg.addColorStop(.45,this.bc);bg.addColorStop(1,this.fc);ctx.globalAlpha=da;ctx.fillStyle=bg;ctx.fill();
-    (KOI_PATTERNS[this.species]||KOI_PATTERNS.default)(ctx,this,s,da);
+    ctx.globalAlpha=da;ctx.fillStyle=this.bgGrad;ctx.fill();
+    this.drawPattern(ctx,this,s,da);
     ctx.globalAlpha=.48*da;ctx.fillStyle=this.fc;ctx.beginPath();ctx.moveTo(s*.18,s*.2);ctx.quadraticCurveTo(s*.04,s*.52,-s*.18,s*.38);ctx.quadraticCurveTo(-s*.04,s*.2,s*.18,s*.2);ctx.fill();
     ctx.globalAlpha=.52*da;ctx.beginPath();ctx.moveTo(s*.32,-s*.37);ctx.quadraticCurveTo(s*.08,-s*.2,-s*.08,-s*.34);ctx.quadraticCurveTo(s*.1,-s*.1,s*.32,-s*.37);ctx.fill();
     ctx.globalAlpha=.14*(1-this.depth)*da;ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(s*.2,-s*.08,s*.28,s*.09,-.3,0,Math.PI*2);ctx.fill();
@@ -2235,12 +2242,29 @@ function exitZen(){
 
 // ── Pause FX (cursor follower + ambient particles) ───────────────────
 const pfx=document.getElementById('pauseFx'),pfxCtx=pfx.getContext('2d');
-let pfxRunning=false,pfxParts=[],pfxMx=-9999,pfxMy=-9999,pfxCx=-9999,pfxCy=-9999,pfxRingPhase=0,pfxRaf=0;
+const pauseBd=document.getElementById('pauseBackdrop'),pauseBdCtx=pauseBd.getContext('2d');
+function snapshotPauseBackdrop(){
+  // Single blurred snapshot of the live pond — replaces an always-on backdrop-filter that re-blurred every frame.
+  pauseBd.width=cv.width;pauseBd.height=cv.height;
+  try{
+    pauseBdCtx.filter='blur(22px) brightness(.6) saturate(1.1)';
+    pauseBdCtx.drawImage(cv,0,0);
+    pauseBdCtx.filter='none';
+  }catch(e){
+    // Fallback: solid wash if filter pipeline isn't available
+    pauseBdCtx.fillStyle='rgba(3,10,10,.94)';pauseBdCtx.fillRect(0,0,pauseBd.width,pauseBd.height);
+  }
+  // Subtle depth gradient on top of the blur
+  const g=pauseBdCtx.createRadialGradient(pauseBd.width*.5,pauseBd.height*.45,0,pauseBd.width*.5,pauseBd.height*.45,Math.max(pauseBd.width,pauseBd.height)*.7);
+  g.addColorStop(0,'rgba(3,10,10,0)');g.addColorStop(1,'rgba(3,10,10,.55)');
+  pauseBdCtx.fillStyle=g;pauseBdCtx.fillRect(0,0,pauseBd.width,pauseBd.height);
+}
+let pfxRunning=false,pfxParts=[],pfxMx=-9999,pfxMy=-9999,pfxCx=-9999,pfxCy=-9999,pfxRingPhase=0,pfxRaf=0,pfxFrameSkip=0;
 function pfxResize(){pfx.width=innerWidth;pfx.height=innerHeight;}
 function pfxStart(){
-  pfxResize();pfxRunning=true;pfxRingPhase=0;
-  // 38 small luminous motes drifting upward, like pond aura
-  pfxParts=Array.from({length:38},()=>({
+  pfxResize();pfxRunning=true;pfxRingPhase=0;pfxFrameSkip=0;
+  // 22 small luminous motes drifting upward, like pond aura
+  pfxParts=Array.from({length:22},()=>({
     x:Math.random()*innerWidth,
     y:Math.random()*innerHeight,
     r:.6+Math.random()*1.7,
@@ -2265,6 +2289,9 @@ function pfxStop(){
 function pfxLoop(){
   if(!pfxRunning)return;
   pfxRaf=requestAnimationFrame(pfxLoop);
+  // Run at ~30fps — cursor follower and motes don't need 60fps and this halves the GPU/CPU cost
+  pfxFrameSkip=1-pfxFrameSkip;
+  if(pfxFrameSkip)return;
   const w=pfx.width,h=pfx.height;
   // Subtle trail wash instead of full clear — gives motes a soft tail
   pfxCtx.fillStyle='rgba(3,10,10,.18)';
@@ -2440,6 +2467,8 @@ function openPause(){
   if(!running)return;
   clearHudDimTimer();
   document.body.classList.remove('hud-dim');
+  // Snapshot the current pond BEFORE flipping gamePaused so the canvas still has fresh content
+  snapshotPauseBackdrop();
   gamePaused=true;
   // Cancel any in-flight press/feed so opening pause mid-feed doesn't leak the feed interval
   if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}
@@ -2628,17 +2657,15 @@ function simStep(stepMs){
 function loop(ts){
   if(!running)return;
   requestAnimationFrame(loop);
-  // Skip the entire frame while the start overlay is visible — saves cursor budget on the menu
-  if(overlayVisible){lastLoopTs=ts;return;}
+  // Skip the entire frame while the start overlay is up OR the game is paused — the pause screen has its own snapshot bg
+  if(overlayVisible||gamePaused){lastLoopTs=ts;return;}
   if(!lastLoopTs)lastLoopTs=ts;
   const elapsed=Math.min(100,ts-lastLoopTs);
   lastLoopTs=ts;
-  if(!gamePaused){
-    simAccum+=elapsed;
-    while(simAccum>=FIXED_DT_MS){
-      simStep(FIXED_DT_MS);
-      simAccum-=FIXED_DT_MS;
-    }
+  simAccum+=elapsed;
+  while(simAccum>=FIXED_DT_MS){
+    simStep(FIXED_DT_MS);
+    simAccum-=FIXED_DT_MS;
   }
   drawWater();
   drawAmbientLayer();
@@ -2658,7 +2685,7 @@ function loop(ts){
   drawRipples();
   for(const p of particles)if(p.type==='firefly')p.draw();
   for(const l of lanterns)l.draw();
-  if(!gamePaused)drawWeather();
+  drawWeather();
 }
 
 // ── Start game ────────────────────────────────────────────────────────
