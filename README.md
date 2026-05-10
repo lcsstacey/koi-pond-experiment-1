@@ -1,61 +1,90 @@
-# Koi Pond Simulation Game
+<div align="center">
 
-*Koi Pond, Experiment #1* is a browser-based koi pond simulation built with vanilla JavaScript, HTML5 canvas and CSS. It was created as a personal project to experiment with fluid animation, UI design, and interactive web effects.
+# 静水庭
 
-## Features
-- **Realistic koi movement:** Smooth, randomized swimming patterns with collision avoidance.
-- **Dynamic day-night cycle:** Subtle changes in lighting and color tone over time to mimic sunrise, daylight, and dusk.
-- **Interactive HUD:** Start/pause controls, rank HUD tracking koi performance, time-of-day arc, and a Zen mode to remove the HUD for a relaxing view.
-- **Optional music and sound effects:** Background music and gentle water ambience (off by default).
-- **Visual effects:** Blur filters, shadows, and gradient overlays to simulate depth and reflection.
-- **Responsive design:** Mobile-friendly layout that adapts to different screen sizes.
+### Seisuitei
 
-## Quick Start
-1. Clone or download the repository (cloning recommended to preserve file structure):
+*A meditative koi pond, hand‑rendered on canvas.*
 
-```sh
-git clone https://github.com/lcsstacey/koi-pond-experiment-1.git
+[**Live demo →**](https://lcsstacey.github.io/koi-pond-experiment-1/)
+
+<!-- Drop a hero screenshot or GIF here when ready: -->
+<!-- <img src="docs/hero.png" alt="Seisuitei koi pond" width="820"> -->
+
+</div>
+
+---
+
+## Overview
+
+Seisuitei is a single‑page koi pond simulation written from scratch in vanilla JavaScript and the HTML5 canvas. It started as an experiment in fluid agent animation and quietly grew into a small world: nineteen varieties of nishikigoi, four biomes, ambient procedural audio, weather, and a handful of troublesome visitors who occasionally drift in to scatter the fish.
+
+It is also a study in restraint. The whole game ships as one HTML file, with no build step and no runtime dependencies. The same file is wrapped in a `WKWebView` for the iOS build, so the browser version and the device version are byte‑identical.
+
+## What's in the pond
+
+**19 koi varieties** rendered with per‑species patterns, drifting through four biomes.
+
+| | |
+| :--- | :--- |
+| **Common** | Kohaku · Showa Sanke · Kumonryu · Benigoi · Doitsu · Ochiba Shigure · Tancho · Platinum Ogon · Kikokuryu · Ghost · Asagi · Yamabuki Ogon |
+| **Native legends** | Goshiki · Karasugoi · Hariwake · Kujaku |
+| **Wandering legends** | Shinju no Ryu · Akeboshi · Tsukihana · Suiryusei |
+| **Troublesome visitors** | Aosagi (heron) · Yamame (river trout) · Suppon (soft‑shell turtle) · Ushigaeru (bullfrog) |
+
+## Worlds
+
+Four hand‑tuned biomes, each with its own palette, particle system, ambient pad, and resident wildlife.
+
+- **Garden** — lily pads, blossoms, an occasional bullfrog among the pads.
+- **Rocky Cove** — driftwood, eels, snappers, and a roaming trout.
+- **Twilight** — fireflies, distant moonlight, the silhouette of a heron sweeping across.
+- **Autumn** — falling leaves, lanterns in season, a soft‑shell turtle traversing the deep.
+
+## Craft notes
+
+- **Pure canvas.** No engine, no framework, no shader pipeline. Every fish, ripple, and shadow is drawn by hand each frame.
+- **Per‑species pattern dispatch.** Each variety is rendered by its own pattern function — Kohaku patches, Asagi indigo net, Doitsu mirror dorsal scales, Goshiki five‑colour streaks, Shinju iridescent halo.
+- **Mood system.** Every koi carries a slowly drifting mood (calm, playful, sleepy, social, hungry) that changes its swim speed, depth preference, and how readily it notices a pellet.
+- **Procedural audio.** Pads, motifs, and bells are synthesised with the Web Audio API and routed through a small convolution reverb. No samples are shipped.
+- **Persistent koi.** Each pond remembers the fish that lived in it — names, traits, colours, and the days they have visited.
+- **Snapshot pause.** Opening the menu freezes the pond into a single blurred snapshot rather than re‑blurring the live canvas every frame.
+- **Zen mode.** A button hides the HUD entirely so the pond is the only thing on screen.
+
+## Stack
+
+`HTML5 Canvas` · `Vanilla JS` · `Web Audio API` · `Capacitor` (iOS wrapper)
+
+## Project layout
+
+```
+.
+├── index.html              ← the entire game (one file, no build)
+├── designs/                ← reference sheets used during art design
+│   └── brand_koi_specimens.html
+├── ios-native/             ← optional native SpriteKit port skeleton
+├── scripts/sync-web.js     ← copies index.html into the Capacitor www/ tree
+├── capacitor.config.json
+└── package.json
 ```
 
-2. Open the `index.html` file in a modern web browser (e.g., Chrome, Firefox).
-3. Enjoy the simulation. Use the on-screen controls to pause/resume, toggle music, or enter Zen mode.
+## iOS build
 
-*Note:* You don't need to install any dependencies; everything runs in the browser. If you run into security restrictions opening local HTML files, you can serve the folder with a simple HTTP server (e.g., `python -m http.server`).
+The game is packaged for iOS with [Capacitor](https://capacitorjs.com). The web canvas is loaded inside a `WKWebView`, so gameplay, audio, and visuals match the browser exactly.
 
-## Building for iOS
-
-The game can be packaged as a native iOS app via [Capacitor](https://capacitorjs.com). The web build (`index.html`) is loaded inside a `WKWebView`, so gameplay, audio, HUD, and visuals are byte-identical to the browser version — no engine rewrite, no behavior changes.
-
-### Requirements
-- macOS with Xcode 15+ and CocoaPods (`sudo gem install cocoapods`)
-- Node.js 18+
-- An Apple Developer account (only required to deploy to a physical device or the App Store)
-
-### First-time setup
 ```sh
 npm install
-npm run ios:init      # creates the ios/ Xcode project
-```
-
-### Iterate
-```sh
+npm run ios:init      # one‑time: creates the ios/ Xcode project
 npm run ios:open      # syncs www/ and opens Xcode
-# or
 npm run ios:run       # syncs and launches the iOS Simulator
 ```
 
-The `ios:sync` script copies the latest `index.html` into `www/` and runs `npx cap sync ios`, so any tweak to the game is one command away from the device build.
+Requirements: macOS with Xcode 15+, Node 18+, CocoaPods, and an Apple Developer account if deploying to a device.
 
-### Notes on visual upgrades
-Because the game runs in `WKWebView`, the existing canvas rendering is preserved. Future fish visual upgrades (WebGL shaders, higher-fidelity sprites, particle effects) can be added directly to `index.html` and will appear in both the browser and the iOS build without changing the gameplay layer.
+## License
 
-## Why this project?
-This experiment explores techniques for animating multiple agents on an HTML5 canvas, implementing smooth UI interactions without external libraries, and experimenting with design aesthetics (typography, gradients, blur). It serves as a portfolio piece demonstrating front-end web skills and creative coding.
+© 2026 Lucas Stacey. All rights reserved.
 
-## Screenshots
-You can add a screenshot or GIF here to showcase the simulation (e.g. `docs/screenshot.png`).
+This repository is published as a portfolio piece. The source, art, and audio synthesis are not licensed for reuse, redistribution, or derivative works. You are welcome to view the code and play the [live demo](https://lcsstacey.github.io/koi-pond-experiment-1/) — please do not copy it.
 
-
-
-## License and Usage
-This project is released under an **all rights reserved** license. You may view and play the koi pond simulation via the GitHub Pages link provided, but you may not copy, redistribute, or reuse the code or assets without explicit permission from the author.
+For licensing enquiries, open an issue.
