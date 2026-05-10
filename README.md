@@ -6,10 +6,9 @@
 
 *A meditative koi pond, hand‑rendered on canvas.*
 
-[**Live demo →**](https://lcsstacey.github.io/seisuitei/)
+<img src="docs/hero.png" alt="Seisuitei — a meditative koi pond" width="100%">
 
-<!-- Drop a hero screenshot or GIF here when ready: -->
-<!-- <img src="docs/hero.png" alt="Seisuitei koi pond" width="820"> -->
+[**Live demo →**](https://lcsstacey.github.io/seisuitei/)
 
 </div>
 

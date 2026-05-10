@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+ios
+ios-native
+designs
+scripts
+mobile-patch-backup.html
+optimized-koi-pond.html
+capacitor.config.json
+.gitignore
