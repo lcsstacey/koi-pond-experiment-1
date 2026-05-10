@@ -4,7 +4,7 @@
 
 ### Seisuitei
 
-<img src="docs/seisuitei-img.png" alt="Seisuitei — a meditative koi pond" width="100%">
+<img src="docs/seisuitei-img.webp" alt="Seisuitei — a meditative koi pond" width="100%">
 
 *A meditative koi pond, hand‑rendered on canvas.*
 
