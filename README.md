@@ -6,7 +6,7 @@
 
 *A meditative koi pond, hand‑rendered on canvas.*
 
-[**Live demo →**](https://lcsstacey.github.io/koi-pond-experiment-1/)
+[**Live demo →**](https://lcsstacey.github.io/seisuitei/)
 
 <!-- Drop a hero screenshot or GIF here when ready: -->
 <!-- <img src="docs/hero.png" alt="Seisuitei koi pond" width="820"> -->
@@ -85,6 +85,6 @@ Requirements: macOS with Xcode 15+, Node 18+, CocoaPods, and an Apple Developer 
 
 © 2026 Lucas Stacey. All rights reserved.
 
-This repository is published as a portfolio piece. The source, art, and audio synthesis are not licensed for reuse, redistribution, or derivative works. You are welcome to view the code and play the [live demo](https://lcsstacey.github.io/koi-pond-experiment-1/) — please do not copy it.
+This repository is published as a portfolio piece. The source, art, and audio synthesis are not licensed for reuse, redistribution, or derivative works. You are welcome to view the code and play the [live demo](https://lcsstacey.github.io/seisuitei/) — please do not copy it.
 
 For licensing enquiries, open an issue.
