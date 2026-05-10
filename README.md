@@ -4,9 +4,9 @@
 
 ### Seisuitei
 
-*A meditative koi pond, hand‑rendered on canvas.*
-
 <img width="6688" height="3764" alt="seisuitei-img" src="https://github.com/user-attachments/assets/c1bc56d8-09f5-4918-8e81-72bd67d5e75e" />
+
+*A meditative koi pond, hand‑rendered on canvas.*
 
 [**Live demo →**](https://lcsstacey.github.io/seisuitei/)
 
