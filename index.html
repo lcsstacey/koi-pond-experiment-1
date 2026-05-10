@@ -53,8 +53,8 @@ canvas{display:block;touch-action:none}
 #author{position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;color:rgba(168,223,212,.28);font-size:.62rem;letter-spacing:.22em;font-family:Georgia,serif;pointer-events:none;user-select:none}
 #ui{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
 #menu{display:flex;gap:6px;padding:10px 14px;background:rgba(0,0,0,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:16px 16px 0 0;border-top:1px solid rgba(255,255,255,.07);pointer-events:all}
-#menu,#rankHud,#notifStack,.topbtn,#seasonBadge{transition:opacity 1.45s cubic-bezier(.22,1,.36,1),transform 1.45s cubic-bezier(.22,1,.36,1),filter 1.45s cubic-bezier(.22,1,.36,1)}
-body.hud-dim #menu,body.hud-dim #rankHud,body.hud-dim #notifStack,body.hud-dim .topbtn,body.hud-dim #seasonBadge{opacity:.34;filter:saturate(.86) blur(.15px)}
+#menu,#rankHud,#notifStack,.topbtn,#seasonBadge{transition:opacity .55s cubic-bezier(.22,1,.36,1),transform 1.45s cubic-bezier(.22,1,.36,1)}
+body.hud-dim #menu,body.hud-dim #rankHud,body.hud-dim #notifStack,body.hud-dim .topbtn,body.hud-dim #seasonBadge{opacity:.34}
 body.hud-dim #menu{opacity:.28}
 .sb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 13px;border-radius:10px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;font-size:.62rem;letter-spacing:.07em;transition:all .28s;font-family:Georgia,serif}
 .sb .ic{font-size:1.2rem;line-height:1}
@@ -359,7 +359,7 @@ function wakeHud(force=false){
   const now=performance.now();
   if(!force&&now-hudWakeTs<170)return;
   hudWakeTs=now;
-  document.body.classList.remove('hud-dim');
+  if(document.body.classList.contains('hud-dim'))document.body.classList.remove('hud-dim');
   scheduleHudDim();
 }
 
@@ -1975,7 +1975,6 @@ class Koi{
     ctx.beginPath();ctx.moveTo(s,0);ctx.bezierCurveTo(s*.72,-s*.37,-s*.52,-s*.37,-s*.82,0);ctx.bezierCurveTo(-s*.52,s*.37,s*.72,s*.37,s,0);
     const bg=ctx.createLinearGradient(-s*.6,-s*.3,s*.5,s*.3);bg.addColorStop(0,this.fc);bg.addColorStop(.45,this.bc);bg.addColorStop(1,this.fc);ctx.globalAlpha=da;ctx.fillStyle=bg;ctx.fill();
     (KOI_PATTERNS[this.species]||KOI_PATTERNS.default)(ctx,this,s,da);
-    ctx.globalAlpha=da;
     ctx.globalAlpha=.48*da;ctx.fillStyle=this.fc;ctx.beginPath();ctx.moveTo(s*.18,s*.2);ctx.quadraticCurveTo(s*.04,s*.52,-s*.18,s*.38);ctx.quadraticCurveTo(-s*.04,s*.2,s*.18,s*.2);ctx.fill();
     ctx.globalAlpha=.52*da;ctx.beginPath();ctx.moveTo(s*.32,-s*.37);ctx.quadraticCurveTo(s*.08,-s*.2,-s*.08,-s*.34);ctx.quadraticCurveTo(s*.1,-s*.1,s*.32,-s*.37);ctx.fill();
     ctx.globalAlpha=.14*(1-this.depth)*da;ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(s*.2,-s*.08,s*.28,s*.09,-.3,0,Math.PI*2);ctx.fill();
@@ -2442,6 +2441,10 @@ function openPause(){
   clearHudDimTimer();
   document.body.classList.remove('hud-dim');
   gamePaused=true;
+  // Cancel any in-flight press/feed so opening pause mid-feed doesn't leak the feed interval
+  if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}
+  if(feedIv){clearInterval(feedIv);feedIv=null;}
+  pressing=false;
   document.getElementById('pauseScreen').style.display='flex';
   document.getElementById('pauseBtn').textContent='▶';
   if(ac){stopTrack();fadePads(400);setTimeout(()=>{if(ac&&ac.state!=='running')ac.resume().catch(()=>{});startMenuTrack();},450);}
@@ -2480,7 +2483,7 @@ function goMainMenu(){
   setWeather('off');
   usedNames.clear();fish=[];ripples=[];pellets=[];coveCreatures=[];lanterns=[];
   const ov=document.getElementById('overlay');
-  ov.style.display='flex';
+  ov.style.display='flex';overlayVisible=true;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ov.style.opacity='1';}));
   setTimeout(()=>{if(ac)ac.resume().then(()=>startMenuTrack());},300);
   // NB: render loop is left running
@@ -2597,7 +2600,7 @@ function updateToD(){return;}
 
 // ── Main loop ─────────────────────────────────────────────────────────
 const FIXED_DT_MS=1000/60;
-let running=false,lastLoopTs=0,simAccum=0;
+let running=false,lastLoopTs=0,simAccum=0,overlayVisible=true;
 function simStep(stepMs){
   sceneElapsedMs+=stepMs;
   wt+=stepMs*.00044;
@@ -2625,6 +2628,8 @@ function simStep(stepMs){
 function loop(ts){
   if(!running)return;
   requestAnimationFrame(loop);
+  // Skip the entire frame while the start overlay is visible — saves cursor budget on the menu
+  if(overlayVisible){lastLoopTs=ts;return;}
   if(!lastLoopTs)lastLoopTs=ts;
   const elapsed=Math.min(100,ts-lastLoopTs);
   lastLoopTs=ts;
@@ -2662,7 +2667,7 @@ function startApp(){
   const sv=getSave();
   totalFed=sv.totalFed||0;
   discovered=sv.discovered||{};
-  const ov=document.getElementById('overlay');ov.style.opacity='0';setTimeout(()=>ov.style.display='none',1200);
+  const ov=document.getElementById('overlay');ov.style.opacity='0';setTimeout(()=>{ov.style.display='none';overlayVisible=false;},1200);
   document.getElementById('ui').style.display='flex';updateHudAnchors();
   document.getElementById('musicBtn').style.display='flex';
   document.getElementById('pauseBtn').style.display='flex';
